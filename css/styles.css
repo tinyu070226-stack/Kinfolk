@@ -581,3 +581,41 @@ body {
   z-index: 10 !important;
 }
 
+
+
+/* Fix SVG Landscape Height and Display z-index */
+#homeView {
+  min-height: 100vh !important;
+  position: relative !important;
+  background-color: transparent !important;
+}
+
+.wabi-sabi-landscape {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 500px !important;
+  z-index: 1000 !important;
+  pointer-events: none !important;
+  display: block !important;
+}
+
+.wabi-sabi-landscape svg {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+.layer-1 path { fill: #E4DFD3 !important; opacity: 0.95 !important; }
+.layer-2 path { fill: #D8DDD4 !important; opacity: 0.95 !important; }
+.layer-3 path { fill: #C84B31 !important; opacity: 0.8 !important; }
+
+.home-container {
+  position: relative !important;
+  z-index: 1001 !important;
+}
+
