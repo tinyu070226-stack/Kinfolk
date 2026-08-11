@@ -397,3 +397,27 @@ h1, h2, h3, h4, h5, h6 {
     min-height: 297mm !important;
   }
 }
+
+/* --- 3D Particle Ellipse Animation --- */
+.hero-3d-ellipse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  pointer-events: none;
+  animation: float3DEllipse 12s linear infinite;
+  transform-style: preserve-3d;
+}
+
+@keyframes float3DEllipse {
+  0% {
+    transform: translate(-50%, -50%) rotateX(65deg) rotateY(-15deg) rotateZ(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotateX(60deg) rotateY(-20deg) rotateZ(180deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotateX(65deg) rotateY(-15deg) rotateZ(360deg);
+  }
+}

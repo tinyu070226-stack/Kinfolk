@@ -145,20 +145,27 @@
             transform: translateZ(20px);
         }
 
-        .glass-ellipse {
+        .hero-3d-ellipse {
             position: absolute;
             top: 50%;
             left: 50%;
             width: 400px;
-            height: 240px;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.05) 100%);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) rotateX(25deg) rotateY(-25deg);
-            box-shadow: -10px 10px 30px rgba(0,0,0,0.05);
+            height: 400px;
             pointer-events: none;
+            animation: float3DEllipse 12s linear infinite;
+            transform-style: preserve-3d;
+        }
+        
+        @keyframes float3DEllipse {
+            0% {
+                transform: translate(-50%, -50%) rotateX(65deg) rotateY(-15deg) rotateZ(0deg);
+            }
+            50% {
+                transform: translate(-50%, -50%) rotateX(60deg) rotateY(-20deg) rotateZ(180deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotateX(65deg) rotateY(-15deg) rotateZ(360deg);
+            }
         }
         
         .home-header h2 {
@@ -718,7 +725,10 @@
     <div id="homeView" class="app-view active">
         <div class="home-container">
             <div class="home-header">
-                <div class="glass-ellipse"></div>
+                <svg class="hero-3d-ellipse" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="200" cy="200" r="190" fill="none" stroke="var(--accent-color)" stroke-width="1.5" stroke-dasharray="6 10" stroke-linecap="round" opacity="0.4"/>
+                    <circle cx="200" cy="200" r="175" fill="none" stroke="var(--accent-color)" stroke-width="1" stroke-dasharray="2 12" stroke-linecap="round" opacity="0.2"/>
+                </svg>
                 <!-- Simple App Icon SVG -->
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 16px; color: var(--accent-color); position: relative; transform: translateZ(30px);">
                     <path d="M12 20h9"/>
