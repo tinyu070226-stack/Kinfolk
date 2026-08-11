@@ -692,6 +692,18 @@
 
     <!-- Home View -->
     <div id="homeView" class="app-view active">
+        <!-- Wabi-Sabi Landscape -->
+        <div class="wabi-sabi-landscape">
+            <svg viewBox="0 0 1440 400" preserveAspectRatio="none" class="landscape-layer layer-1">
+                <path fill="#EAE5DB" d="M0,400 C280,380 500,300 800,250 C1100,200 1300,100 1440,50 L1440,400 L0,400 Z"></path>
+            </svg>
+            <svg viewBox="0 0 1440 400" preserveAspectRatio="none" class="landscape-layer layer-2">
+                <path fill="#E2E6DF" d="M0,400 C350,390 600,320 900,260 C1150,210 1350,150 1440,100 L1440,400 L0,400 Z"></path>
+            </svg>
+            <svg viewBox="0 0 1440 400" preserveAspectRatio="none" class="landscape-layer layer-3">
+                <path fill="rgba(200, 75, 49, 0.08)" d="M0,400 C450,400 750,350 1050,280 C1250,230 1400,180 1440,150 L1440,400 L0,400 Z"></path>
+            </svg>
+        </div>
         <div class="home-container">
             <div class="home-header">
                 <svg class="hero-3d-ellipse" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
@@ -744,6 +756,9 @@
             <input type="text" id="editor-note-title" class="note-title-input" value="Untitled Note" />
             
             <div class="topbar-right">
+                <button id="btn-delete-note" style="background:none;border:none;cursor:pointer;color:var(--text-color);display:flex;align-items:center;margin-right:8px;" title="刪除此筆記 (Delete Note)">
+                    <svg viewBox="0 0 24 24" class="icon" style="width:22px;height:22px;"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                </button>
                 <div id="sync-status">
                     <div class="status-dot" id="status-dot"></div>
                     <span id="status-text">Offline</span>

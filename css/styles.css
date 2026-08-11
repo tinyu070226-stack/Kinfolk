@@ -249,6 +249,7 @@ h1, h2, h3, h4, h5, h6 {
   aspect-ratio: 4/3;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .note-card:hover {
@@ -266,6 +267,45 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.85rem;
   color: rgba(45, 45, 45, 0.5);
   margin-top: auto;
+}
+
+/* Delete button on Note Card */
+.note-card-delete {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  color: var(--text-color);
+  z-index: 5;
+}
+
+.note-card:hover .note-card-delete {
+  opacity: 1;
+}
+
+.note-card-delete:hover {
+  background: #FFECEC;
+  color: #D32F2F;
+  border-color: #FFCDCD;
+}
+
+.note-card-delete svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
 }
 
 /* --- Popovers & Inspectors --- */
@@ -359,7 +399,31 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  z-index: 10;
 }
+
+/* Wabi-Sabi Landscape */
+.wabi-sabi-landscape {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 40vh;
+  min-height: 350px;
+  z-index: 1;
+  pointer-events: none;
+}
+.landscape-layer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.layer-1 { opacity: 0.9; }
+.layer-2 { opacity: 0.8; }
+.layer-3 { opacity: 1; }
 
 @media print {
   @page {

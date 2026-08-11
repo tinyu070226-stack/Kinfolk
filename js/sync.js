@@ -67,6 +67,56 @@ class SyncController {
         }
     }
 
+    async deleteNote(noteId) {
+        // Delete local
+        localStorage.removeItem(`note_${noteId}`);
+        
+        // Delete from GitHub
+        if (!this.token || !this.repo) {
+            return { status: 'offline' };
+        }
+
+        const path = `notes/${noteId}.json`;
+        const url = `https://api.github.com/repos/${this.repo}/contents/${path}`;
+
+        try {
+            // First get the SHA if file exists
+            let sha = null;
+            const getRes = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${this.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (getRes.ok) {
+                const data = await getRes.json();
+                sha = data.sha;
+                
+                const delRes = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `token ${this.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Delete note ${noteId}`,
+                        branch: this.branch,
+                        sha: sha
+                    })
+                });
+
+                if (!delRes.ok) throw new Error('Failed to delete on GitHub');
+            }
+
+            return { status: 'success' };
+        } catch (e) {
+            console.error(e);
+            return { status: 'error' };
+        }
+    }
+
     saveLocal(noteId, payload) {
         localStorage.setItem(`note_${noteId}`, JSON.stringify(payload));
     }

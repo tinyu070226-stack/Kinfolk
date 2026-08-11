@@ -114,6 +114,19 @@ document.addEventListener('DOMContentLoaded', () => {
         showHomeView();
     });
 
+    const btnDeleteNote = document.getElementById('btn-delete-note');
+    if (btnDeleteNote) {
+        btnDeleteNote.addEventListener('click', async () => {
+            if (confirm('確定刪除此筆記？ (Are you sure you want to delete this note?)')) {
+                const noteToDelete = currentNoteId;
+                currentNoteId = null; // Prevent auto-save
+                await syncCtrl.deleteNote(noteToDelete);
+                showToast('筆記已刪除 (Note deleted)');
+                showHomeView();
+            }
+        });
+    }
+
     document.getElementById('btn-create-new').addEventListener('click', () => {
         showEditorView(Date.now().toString());
     });
@@ -539,6 +552,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'note-card';
         
+        // Delete button
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'note-card-delete';
+        deleteBtn.title = '刪除此筆記';
+        deleteBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        deleteBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (confirm('確定刪除此筆記？ (Are you sure you want to delete this note?)')) {
+                if (currentNoteId === note.id) {
+                    currentNoteId = null; // if somehow deleted from drawer/background
+                }
+                await syncCtrl.deleteNote(note.id);
+                showToast('筆記已刪除 (Note deleted)');
+                renderHomeLists();
+                renderDrawerList();
+            }
+        });
+        
         const title = document.createElement('div');
         title.className = 'note-card-title';
         title.innerText = note.title || 'Untitled Note';
@@ -559,6 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         actions.appendChild(toggleBtn);
+        card.appendChild(deleteBtn);
         card.appendChild(title);
         card.appendChild(date);
         card.appendChild(actions);
