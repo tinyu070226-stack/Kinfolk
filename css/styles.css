@@ -485,3 +485,16 @@ h1, h2, h3, h4, h5, h6 {
     transform: translate(-50%, -50%) rotateX(65deg) rotateY(-15deg) rotateZ(360deg);
   }
 }
+
+
+/* Fix Note Card Aspect Ratio and Grid Dimensions */
+.note-card {
+  aspect-ratio: auto !important;
+  min-height: 140px !important;
+  max-height: 180px !important;
+}
+
+.home-container {
+  max-width: 1100px !important;
+}
+
