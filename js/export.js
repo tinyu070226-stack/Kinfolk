@@ -7,7 +7,7 @@ class ExportController {
 
         const originalBackgroundImage = paperElement.style.backgroundImage || window.getComputedStyle(paperElement).backgroundImage;
         if (!includeGrid) {
-            paperElement.style.backgroundImage = 'none';
+            paperElement.style.setProperty('background-image', 'none', 'important');
         }
 
         const canvas = await html2canvas(paperElement, {
@@ -45,7 +45,7 @@ class ExportController {
     static async exportPDF(paperElement, noteTitle = 'note', includeGrid = true) {
         const originalBackgroundImage = paperElement.style.backgroundImage || window.getComputedStyle(paperElement).backgroundImage;
         if (!includeGrid) {
-            paperElement.style.backgroundImage = 'none';
+            paperElement.style.setProperty('background-image', 'none', 'important');
         }
         window.print();
         if (!includeGrid) {

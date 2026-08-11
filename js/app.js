@@ -189,15 +189,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const shapePopoverBtn = document.getElementById('btn-shape-popover');
     const shapeInspector = document.getElementById('shape-inspector');
     
+    // Side Inspectors
+    const leftInspector = document.getElementById('left-inspector');
+    const rightInspector = document.getElementById('right-inspector');
+    const toggleLeft = document.getElementById('toggle-left-inspector');
+    const toggleRight = document.getElementById('toggle-right-inspector');
+    
     shapePopoverBtn.addEventListener('click', (e) => {
         shapeInspector.classList.toggle('active');
     });
     
     // Close inspector when clicking outside
     document.addEventListener('click', (e) => {
-        if (!shapeInspector.contains(e.target) && !shapePopoverBtn.contains(e.target)) {
+        if (shapeInspector && !shapeInspector.contains(e.target) && shapePopoverBtn && !shapePopoverBtn.contains(e.target)) {
             shapeInspector.classList.remove('active');
         }
+        if (leftInspector && !leftInspector.contains(e.target) && toggleLeft && !toggleLeft.contains(e.target)) {
+            leftInspector.classList.remove('open');
+            if (toggleLeft) toggleLeft.classList.remove('open');
+        }
+        if (rightInspector && !rightInspector.contains(e.target) && toggleRight && !toggleRight.contains(e.target)) {
+            rightInspector.classList.remove('open');
+            if (toggleRight) toggleRight.classList.remove('open');
+        }
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
     });
 
     // Inspector Events
@@ -260,11 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Side Inspectors Toggle
-    const leftInspector = document.getElementById('left-inspector');
-    const rightInspector = document.getElementById('right-inspector');
-    const toggleLeft = document.getElementById('toggle-left-inspector');
-    const toggleRight = document.getElementById('toggle-right-inspector');
-    
     if (toggleLeft && leftInspector) {
         toggleLeft.addEventListener('click', () => {
             leftInspector.classList.toggle('open');
