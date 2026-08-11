@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kinfolk OS">
+    <title>Kinfolk OS / 靈感與隨筆</title>
+    
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+JP:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/perfect-freehand@1.2.0/dist/perfect-freehand.min.js"></script>
+    <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #F8F7F2;
+            --sidebar-bg: rgba(248, 247, 242, 0.9);
+            --toolbar-bg: rgba(255, 255, 255, 0.85);
+            --text-color: #2D2B2A;
+            --border-color: #E2DFD8;
+            --accent-color: #8C7B6B;
+            --grid-color: rgba(226, 223, 216, 0.5);
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* App Views */
+        .app-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            background-color: var(--bg-color);
+        }
+        
+        .app-view.active {
+            display: flex;
+        }
+
+        /* SVG Icons styling */
+        svg.icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            stroke: currentColor;
+            stroke-width: 0;
+        }
+
+        /* --- Home View --- */
+        #homeView {
+            overflow-y: auto;
+            padding: 10vh 20px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .home-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .home-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .home-header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        
+        .home-header h2 {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--accent-color);
+        }
+
+        .cta-container {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        #btn-create-new {
+            background-color: var(--text-color);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Noto Serif JP', serif;
+            transition: opacity 0.2s;
+        }
+        #btn-create-new:hover {
+            opacity: 0.85;
+        }
+
+        .notes-section {
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+        
+        .notes-section h3 {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            max-width: 1100px;
+            gap: 20px;
+        }
+
+        .note-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .note-card-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .note-card-date {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+        }
+
+        .note-card-actions {
+            margin-top: 12px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .toggle-complete-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* --- Editor View --- */
+        .editor-topbar {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: var(--toolbar-bg);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            justify-content: space-between;
+        }
+
+        .topbar-left, .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #btn-back-home {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #drawerToggleBtn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .note-title-input {
+            border: none;
+            background: transparent;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.1rem;
+            color: var(--text-color);
+            text-align: center;
+            width: 250px;
+        }
+        .note-title-input:focus {
+            outline: none;
+            border-bottom: 1px solid var(--accent-color);
+        }
+
+        /* Side Drawer */
+        #editor-drawer {
+            position: absolute;
+            left: -300px;
+            top: 50px; /* Below topbar */
+            bottom: 0;
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            transition: left var(--transition-speed);
+            z-index: 90;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        #editor-drawer.open {
+            left: 0;
+        }
+
+        .drawer-note-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 0.9rem;
+        }
+        .drawer-note-item:hover, .drawer-note-item.active {
+            background: rgba(226, 223, 216, 0.4);
+        }
+
+        /* Bottom Floating Dock Toolbar */
+        #bottom-dock {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 16px;
+            padding: 10px 16px;
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            z-index: 100;
+            align-items: center;
+        }
+
+        .dock-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            transition: all 0.2s;
+        }
+        .dock-btn:hover, .dock-btn.active {
+            background: rgba(0,0,0,0.06);
+            color: var(--accent-color);
+        }
+        .dock-btn svg.icon {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            width: 24px;
+            height: 24px;
+        }
+
+        .dock-separator {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+        }
+
+        /* Shape Inspector Popover */
+        #shape-inspector {
+            position: absolute;
+            bottom: 80px; /* Above dock */
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 16px;
+            display: none;
+            gap: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 95;
+            border: 1px solid var(--border-color);
+            align-items: center;
+        }
+        #shape-inspector.active {
+            display: flex;
+        }
+
+        .side-inspector {
+            position: absolute;
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            z-index: 101;
+            width: 260px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #left-inspector {
+            display: none;
+        }
+        #left-inspector.open {
+            display: flex;
+        }
+
+        #right-inspector {
+            right: -280px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #right-inspector.open {
+            right: 24px;
+        }
+
+        .inspector-toggle-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--toolbar-bg);
+            border: 1px solid var(--border-color);
+            width: 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 102;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: left 0.3s, right 0.3s;
+            backdrop-filter: blur(12px);
+        }
+
+        #toggle-left-inspector { left: 0; border-radius: 0 8px 8px 0; border-left: none; }
+        #toggle-left-inspector.open { left: 290px; }
+        #toggle-right-inspector { right: 0; border-radius: 8px 0 0 8px; border-right: none; }
+        #toggle-right-inspector.open { right: 290px; }
+
+        .inspector-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+            position: absolute;
+            bottom: 80px; /* Above dock */
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 16px;
+            display: none;
+            gap: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 95;
+            border: 1px solid var(--border-color);
+            align-items: center;
+        }
+        #shape-inspector.active {
+            display: flex;
+        }
+
+        .inspector-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .inspector-group label {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+        }
+        
+        .inspector-group select, .inspector-group input[type="range"] {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Canvas Area */
+        #paperContainer {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background-color: #EFEFEF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 40px 120px 40px; /* padding-top: 80px, padding-bottom: 120px */
+            touch-action: auto;
+        }
+
+        #paper {
+            width: 800px;
+            min-height: 1130px;
+            background: #FFF;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            transform-origin: top left;
+            transition: height 0.3s ease;
+            will-change: transform;
+            contain: content;
+        }
+
+        #add-page-btn {
+            margin: 20px 0;
+            padding: 10px 24px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: var(--toolbar-bg);
+            cursor: pointer;
+            font-family: 'Noto Serif JP', serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: opacity 0.2s;
+        }
+        #add-page-btn:hover { opacity: 0.8; }
+
+
+        #drawingCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            touch-action: none; /* Prevent scroll swallow */
+        }
+
+        #textOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            padding: 40px;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 16px;
+            line-height: 1.8;
+            outline: none;
+            color: var(--text-color);
+            pointer-events: none;
+            overflow: hidden; /* Multi-page expanding handles size */
+            will-change: transform;
+            contain: content;
+        }
+        
+        body[data-mode="type"] #textOverlay {
+            pointer-events: auto;
+        }
+        body[data-mode="type"] #drawingCanvas {
+            pointer-events: none;
+        }
+
+        /* Modals (Sync, Export) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: #666;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--text-color);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+        }
+
+        #sync-status {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        .status-dot.syncing { background: #E5A823; }
+        .status-dot.success { background: #4CAF50; }
+        .status-dot.error { background: #F44336; }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+                background-color: var(--bg-color);
+                margin: 0;
+                padding: 0;
+            }
+            .app-view:not(#editorView) {
+                display: none !important;
+            }
+            .editor-topbar, #editor-drawer, #bottom-dock, #shape-inspector, .side-inspector, .inspector-toggle-btn, #add-page-btn, .modal-overlay, #toast-container, #btn-home-settings {
+                display: none !important;
+            }
+            #editorView {
+                position: static;
+                display: block;
+            }
+            #paperContainer {
+                padding: 0 !important;
+                background: none !important;
+                overflow: visible !important;
+                display: block;
+            }
+            #paper {
+                box-shadow: none !important;
+                background-color: transparent !important;
+                margin: 0 !important;
+                width: 210mm !important;
+                min-height: 297mm !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Home View -->
+    <div id="homeView" class="app-view active">
+        <div class="home-container">
+            <div class="home-header">
+            <!-- Simple App Icon SVG -->
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 16px; color: var(--accent-color);">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <h1>Kinfolk OS / 靈感與隨筆</h1>
+            <h2>日々の閃きと思考の記憶</h2>
+        </div>
+        
+        <div class="cta-container">
+            <button id="btn-create-new">+ 新建筆記 (Create New Note)</button>
+        </div>
+
+        <div class="notes-section">
+            <h3>還沒完成 / 製作中 (In-Progress & Drafts)</h3>
+            <div id="drafts-grid" class="notes-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <div class="notes-section" style="width: 100%;">
+            <h3>已完成筆記 (Completed Notes)</h3>
+            <div id="completed-grid" class="notes-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+        </div>
+        <button id="btn-home-settings" style="position: fixed; bottom: 28px; right: 28px; z-index: 90; background: var(--toolbar-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); backdrop-filter: blur(12px);"><svg viewBox="0 0 24 24" class="icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+
+    <!-- Editor View -->
+    <div id="editorView" class="app-view">
+        <div class="editor-topbar">
+            <div class="topbar-left">
+                <button id="btn-back-home">
+                    <svg viewBox="0 0 24 24" class="icon"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    首頁
+                </button>
+                <button id="drawerToggleBtn">
+                    <svg viewBox="0 0 24 24" class="icon"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+            
+            <input type="text" id="editor-note-title" class="note-title-input" value="Untitled Note" />
+            
+            <div class="topbar-right">
+                <div id="sync-status">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">Offline</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side Drawer -->
+        <div id="editor-drawer">
+            <div id="drawer-note-list">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div id="paperContainer">
+            <div id="paper">
+                <div id="textOverlay" contenteditable="true" placeholder="Start writing here... (Apple Pencil Scribble supported)"></div>
+                <canvas id="drawingCanvas"></canvas>
+            </div>
+            <button id="add-page-btn">+ 新增一頁 (Add Page)</button>
+        </div>
+
+        <!-- Shape Inspector Popover -->
+        <div id="shape-inspector">
+            <div class="inspector-group" id="shape-select-group">
+                <label>Shape</label>
+                <select id="shape-type">
+                    <option value="rect">Rectangle</option>
+                    <option value="circle">Circle</option>
+                    <option value="triangle">Triangle</option>
+                    <option value="line">Solid Line</option>
+                    <option value="dashed">Dashed Line</option>
+                    <option value="arrow">Arrow</option>
+                </select>
+            </div>
+            <div class="inspector-group">
+                <label>Color</label>
+                <div class="color-swatches" style="display: flex; gap: 8px;">
+                    <button class="swatch" data-color="#2D2B2A" style="background:#2D2B2A; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#4A4A4A" style="background:#4A4A4A; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#E34234" style="background:#E34234; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#4B0082" style="background:#4B0082; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#006400" style="background:#006400; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#8B4513" style="background:#8B4513; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#FFFFFF" style="background:#FFFFFF; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                </div>
+            </div>
+            <div class="inspector-group" id="stroke-color-group">
+                <label>Custom Stroke</label>
+                <input type="color" id="stroke-color" value="#2D2B2A">
+            </div>
+            <div class="inspector-group" id="fill-color-group">
+                <label>Fill</label>
+                <input type="color" id="fill-color" value="#000000">
+            </div>
+            <div class="inspector-group">
+                <label>Width</label>
+                <input type="range" id="stroke-width" min="1" max="20" value="3">
+            </div>
+        </div>
+
+        <!-- Left floating inspector (Typography) -->
+        <button class="inspector-toggle-btn" id="toggle-left-inspector">
+            <svg viewBox="0 0 24 24" class="icon"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="side-inspector" id="left-inspector">
+            <div class="inspector-title">Typography</div>
+            <div class="inspector-group">
+                <label>Font Family</label>
+                <select id="typo-font">
+                    <option value="'Noto Serif JP', serif">Noto Serif</option>
+                    <option value="'Cormorant Garamond', serif">Cormorant Garamond</option>
+                    <option value="'Inter', sans-serif">Inter</option>
+                </select>
+            </div>
+            <div class="inspector-group">
+                <label>Font Size</label>
+                <input type="range" id="typo-size" min="12" max="72" value="16">
+            </div>
+            <div class="inspector-group">
+                <label>Line Height</label>
+                <input type="range" id="typo-lineheight" min="1" max="3" step="0.1" value="1.8">
+            </div>
+            <div class="inspector-group">
+                <label>Text Alignment</label>
+                <select id="typo-align">
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                </select>
+            </div>
+            <div class="inspector-group">
+                <label>Text Color</label>
+                <input type="color" id="typo-color" value="#2D2B2A">
+            </div>
+        </div>
+
+        <!-- Right floating inspector (Brush) -->
+        <button class="inspector-toggle-btn" id="toggle-right-inspector">
+            <svg viewBox="0 0 24 24" class="icon"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="side-inspector" id="right-inspector">
+            <div class="inspector-title">Brush & Palette</div>
+            <div class="inspector-group">
+                <label>Tools</label>
+                <div style="display: flex; gap: 8px;">
+                    <button class="dock-btn" data-tool="draw" data-brush="pen" style="border:1px solid #ccc"><svg viewBox="0 0 24 24" class="icon"><path d="M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="dock-btn" data-tool="draw" data-brush="pencil" style="border:1px solid #ccc"><svg viewBox="0 0 24 24" class="icon"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="dock-btn" data-tool="erase" style="border:1px solid #ccc"><svg viewBox="0 0 24 24" class="icon"><path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L20 9C20.5 9.5 20.5 10.5 20 11L11 20H20V20Z" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div>
+            </div>
+            <div class="inspector-group">
+                <label>Stroke Width</label>
+                <input type="range" id="brush-width" min="1" max="40" value="3">
+            </div>
+            <div class="inspector-group">
+                <label>Color Palette</label>
+                <div class="color-swatches" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button class="swatch" data-color="#2D2B2A" style="background:#2D2B2A; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#4A4A4A" style="background:#4A4A4A; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#E34234" style="background:#E34234; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#4B0082" style="background:#4B0082; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#006400" style="background:#006400; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#8B4513" style="background:#8B4513; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                    <button class="swatch" data-color="#FFFFFF" style="background:#FFFFFF; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer;"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Floating Dock -->
+        <div id="bottom-dock">
+            <button class="dock-btn" data-tool="select" title="Select/Move">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dock-btn" data-tool="type" title="Type/Text">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M4 7V4h16v3M9 20h6M12 4v16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="dock-separator"></div>
+            
+            <button class="dock-btn active" data-tool="draw" data-brush="pen" title="Fountain Pen">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dock-btn" data-tool="draw" data-brush="pencil" title="Graphite Pencil">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dock-btn" data-tool="erase" title="Eraser">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L20 9C20.5 9.5 20.5 10.5 20 11L11 20H20V20Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="dock-separator"></div>
+            
+            <button class="dock-btn" data-tool="shape" id="btn-shape-popover" title="Shapes">
+                <svg viewBox="0 0 24 24" class="icon"><rect x="3" y="3" width="18" height="18" rx="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            
+            <button class="dock-btn" id="btn-insert-image" title="Image Upload">
+                <svg viewBox="0 0 24 24" class="icon"><rect x="3" y="3" width="18" height="18" rx="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <input type="file" id="file-insert" accept="image/*" style="display:none">
+            
+            <div class="dock-separator"></div>
+            
+            <button class="dock-btn" id="btn-undo" title="Undo">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M3 7v6h6M3 13a9 9 0 1 0 18 0 9 9 0 0 0-9-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dock-btn" id="btn-redo" title="Redo">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M21 7v6h-6M21 13a9 9 0 1 1-18 0 9 9 0 0 1 9-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            
+            <div class="dock-separator"></div>
+            
+            <button class="dock-btn" id="btn-export" title="Export">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 9l5-5 5 5M12 4v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dock-btn" id="btn-manual-sync" title="Check for Updates">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="dock-btn" id="btn-settings" title="Settings">
+                <svg viewBox="0 0 24 24" class="icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- GitHub Sync Modal -->
+    <div class="modal-overlay" id="sync-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">GitHub Sync Settings</h2>
+            <div class="form-group">
+                <label>Personal Access Token</label>
+                <input type="password" id="gh-token" placeholder="ghp_...">
+            </div>
+            <div class="form-group">
+                <label>Repository (owner/repo)</label>
+                <input type="text" id="gh-repo" placeholder="username/notes">
+            </div>
+            <div class="form-group">
+                <label>Branch</label>
+                <input type="text" id="gh-branch" placeholder="main" value="main">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btn-sync-cancel">Cancel</button>
+                <button class="btn btn-secondary" id="btn-sync-force-pull">🔄 檢查並更新 (Check for Updates)</button>
+                <button class="btn btn-primary" id="btn-sync-save">Save & Sync</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; background: rgba(45, 43, 42, 0.9); color: white; padding: 10px 20px; border-radius: 20px; font-size: 0.9rem; font-family: 'Noto Serif JP', serif; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        已同步至最新進度 (Synced to Latest)
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Export Options</h2>
+            <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-size: 1rem;">
+                    <input type="checkbox" id="export-include-grid" checked style="width: auto;"> 
+                    是否包含紙張十字格線背景 (Include Grid)
+                </label>
+            </div>
+            <div class="modal-actions" style="justify-content: center; flex-direction: column;">
+                <button class="btn btn-secondary" id="btn-export-png" style="margin-bottom: 10px;">Export as PNG</button>
+                <button class="btn btn-secondary" id="btn-export-jpg" style="margin-bottom: 10px;">Export as JPG</button>
+                <button class="btn btn-secondary" id="btn-export-pdf" style="margin-bottom: 10px;">Export as PDF</button>
+                <button class="btn btn-secondary" id="btn-export-docx" style="margin-bottom: 10px;">Export as DOCX</button>
+                <button class="btn btn-primary" id="btn-export-cancel" style="margin-top: 10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/canvas.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
