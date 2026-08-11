@@ -527,3 +527,17 @@ h1, h2, h3, h4, h5, h6 {
 .layer-2 path { fill: #D8DDD4 !important; }
 .layer-3 path { fill: rgba(200, 75, 49, 0.22) !important; }
 
+
+
+/* Highlight Landscape Contrast */
+.wabi-sabi-landscape {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 1 !important;
+}
+
+.layer-1 path { fill: #E2DBD0 !important; }
+.layer-2 path { fill: #CBD3C6 !important; }
+.layer-3 path { fill: rgba(200, 75, 49, 0.35) !important; }
+
