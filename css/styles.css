@@ -284,7 +284,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.2s, background 0.2s;
   color: var(--text-color);
   z-index: 5;
@@ -318,7 +318,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 16px;
   box-shadow: var(--shadow-float);
   z-index: 300;
-  opacity: 0;
+  opacity: 1;
   pointer-events: none;
   transform: translateY(10px);
 }
@@ -618,4 +618,5 @@ body {
   position: relative !important;
   z-index: 1001 !important;
 }
+
 
