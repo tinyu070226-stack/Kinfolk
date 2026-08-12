@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!syncCtrl.token) return;
         const result = await syncCtrl.pullLatest();
         if (result.status === 'success' && result.count > 0) {
-            showToast('已�?步至?�?�進度 (Synced to Latest)');
+            showToast('已同步至最新進度 (Synced to Latest)');
             renderHomeLists();
             if (currentNoteId) {
                 // Refresh current note without losing unsaved canvas if we have conflict resolution?
@@ -117,11 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnDeleteNote = document.getElementById('btn-delete-note');
     if (btnDeleteNote) {
         btnDeleteNote.addEventListener('click', async () => {
-            if (confirm('確�??�除此�?記�? (Are you sure you want to delete this note?)')) {
+            if (confirm('確定刪除此筆記？ (Are you sure you want to delete this note?)')) {
                 const noteToDelete = currentNoteId;
                 currentNoteId = null; // Prevent auto-save
                 await syncCtrl.deleteNote(noteToDelete);
-                showToast('筆�?已刪??(Note deleted)');
+                showToast('筆記已刪除 (Note deleted)');
                 showHomeView();
             }
         });
@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 dot.className = 'status-dot success';
                 txt.innerText = 'Synced';
             }
-            showToast('已�?步至?�?�進度 (Synced to Latest)');
+            showToast('已同步至最新進度 (Synced to Latest)');
             renderHomeLists();
             if (currentNoteId) showEditorView(currentNoteId);
         } else {
@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         const result = await syncCtrl.pullLatest();
         if (result.status === 'success') {
-            showToast('已�?步至?�?�進度 (Synced to Latest)');
+            showToast('已同步至最新進度 (Synced to Latest)');
             renderHomeLists();
             if (currentNoteId) showEditorView(currentNoteId);
         } else {
@@ -555,16 +555,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Delete button
         const deleteBtn = document.createElement('div');
         deleteBtn.className = 'note-card-delete';
-        deleteBtn.title = '?�除此�?�?;
+        deleteBtn.title = '刪除此筆記';
         deleteBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         deleteBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (confirm('確�??�除此�?記�? (Are you sure you want to delete this note?)')) {
+            if (confirm('確定刪除此筆記？ (Are you sure you want to delete this note?)')) {
                 if (currentNoteId === note.id) {
                     currentNoteId = null; // if somehow deleted from drawer/background
                 }
                 await syncCtrl.deleteNote(note.id);
-                showToast('筆�?已刪??(Note deleted)');
+                showToast('筆記已刪除 (Note deleted)');
                 renderHomeLists();
                 renderDrawerList();
             }
@@ -652,4 +652,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial render
     showHomeView();
 });
-
