@@ -117,11 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnDeleteNote = document.getElementById('btn-delete-note');
     if (btnDeleteNote) {
         btnDeleteNote.addEventListener('click', async () => {
-            if (confirm('確定刪除此筆記？ (Are you sure you want to delete this note?)')) {
+            if (confirm('確定刪除此筆記？')) {
                 const noteToDelete = currentNoteId;
                 currentNoteId = null; // Prevent auto-save
                 await syncCtrl.deleteNote(noteToDelete);
-                showToast('筆記已刪除 (Note deleted)');
+                showToast('筆記已刪除');
                 showHomeView();
             }
         });
@@ -559,12 +559,12 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         deleteBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (confirm('確定刪除此筆記？ (Are you sure you want to delete this note?)')) {
+            if (confirm('確定刪除此筆記？')) {
                 if (currentNoteId === note.id) {
                     currentNoteId = null; // if somehow deleted from drawer/background
                 }
                 await syncCtrl.deleteNote(note.id);
-                showToast('筆記已刪除 (Note deleted)');
+                showToast('筆記已刪除');
                 renderHomeLists();
                 renderDrawerList();
             }

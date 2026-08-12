@@ -1,128 +1,58 @@
 class SyncController {
     constructor() {
-        this.token = localStorage.getItem('gh_token') || '';
-        this.repo = localStorage.getItem('gh_repo') || '';
-        this.branch = localStorage.getItem('gh_branch') || 'main';
-        this.offlineQueue = [];
+        this.token = (localStorage.getItem('gh_token') || '').trim();
+        this.repo = (localStorage.getItem('gh_repo') || '').trim();
+        this.branch = (localStorage.getItem('gh_branch') || 'main').trim();
     }
 
     setCredentials(token, repo, branch) {
-        this.token = token;
-        this.repo = repo;
-        this.branch = branch;
-        localStorage.setItem('gh_token', token);
-        localStorage.setItem('gh_repo', repo);
-        localStorage.setItem('gh_branch', branch);
+        this.token = (token || '').trim();
+        this.repo = (repo || '').trim();
+        this.branch = (branch || 'main').trim();
+        localStorage.setItem('gh_token', this.token);
+        localStorage.setItem('gh_repo', this.repo);
+        localStorage.setItem('gh_branch', this.branch);
     }
 
-    async syncNote(noteId, payload) {
-        if (!this.token || !this.repo) {
-            this.saveLocal(noteId, payload);
-            return { status: 'offline' };
+    // UTF-8 safe base64 encode
+    _toBase64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
         }
-
-        const path = `notes/${noteId}.json`;
-        const url = `https://api.github.com/repos/${this.repo}/contents/${path}`;
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-
-        try {
-            // First get the SHA if file exists
-            let sha = null;
-            const getRes = await fetch(url, {
-                headers: {
-                    'Authorization': `token ${this.token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            if (getRes.ok) {
-                const data = await getRes.json();
-                sha = data.sha;
-            }
-
-            // Put the new content
-            const putRes = await fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${this.token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: `Update note ${noteId}`,
-                    content: content,
-                    branch: this.branch,
-                    sha: sha || undefined
-                })
-            });
-
-            if (!putRes.ok) throw new Error('Failed to push to GitHub');
-
-            this.saveLocal(noteId, payload);
-            return { status: 'success' };
-        } catch (e) {
-            console.error(e);
-            this.saveLocal(noteId, payload);
-            return { status: 'error' };
-        }
+        return btoa(binary);
     }
 
-    async deleteNote(noteId) {
-        // Delete local
-        localStorage.removeItem(`note_${noteId}`);
-        
-        // Delete from GitHub
-        if (!this.token || !this.repo) {
-            return { status: 'offline' };
+    _headers() {
+        return {
+            'Authorization': 'token ' + this.token,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        };
+    }
+
+    async _getFileSha(url) {
+        const res = await fetch(url + '?ref=' + this.branch, {
+            headers: { 'Authorization': 'token ' + this.token, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            return data.sha || null;
         }
-
-        const path = `notes/${noteId}.json`;
-        const url = `https://api.github.com/repos/${this.repo}/contents/${path}`;
-
-        try {
-            // First get the SHA if file exists
-            let sha = null;
-            const getRes = await fetch(url, {
-                headers: {
-                    'Authorization': `token ${this.token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            if (getRes.ok) {
-                const data = await getRes.json();
-                sha = data.sha;
-                
-                const delRes = await fetch(url, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `token ${this.token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Delete note ${noteId}`,
-                        branch: this.branch,
-                        sha: sha
-                    })
-                });
-
-                if (!delRes.ok) throw new Error('Failed to delete on GitHub');
-            }
-
-            return { status: 'success' };
-        } catch (e) {
-            console.error(e);
-            return { status: 'error' };
-        }
+        return null;
     }
 
     saveLocal(noteId, payload) {
-        localStorage.setItem(`note_${noteId}`, JSON.stringify(payload));
+        try {
+            localStorage.setItem('note_' + noteId, JSON.stringify(payload));
+        } catch (e) {
+            console.error('LocalStorage full:', e);
+        }
     }
 
     getLocal(noteId) {
-        const data = localStorage.getItem(`note_${noteId}`);
+        const data = localStorage.getItem('note_' + noteId);
         return data ? JSON.parse(data) : null;
     }
 
@@ -130,62 +60,145 @@ class SyncController {
         const notes = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key.startsWith('note_')) {
-                notes.push(JSON.parse(localStorage.getItem(key)));
+            if (key && key.startsWith('note_')) {
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(key));
+                    if (parsed && parsed.id) notes.push(parsed);
+                } catch (e) {}
             }
         }
-        return notes.sort((a, b) => b.updatedAt - a.updatedAt);
+        return notes.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    }
+
+    async syncNote(noteId, payload) {
+        this.saveLocal(noteId, payload);
+        if (!this.token || !this.repo) return { status: 'offline' };
+
+        const path = 'notes/' + noteId + '.json';
+        const url = 'https://api.github.com/repos/' + this.repo + '/contents/' + path;
+
+        try {
+            const content = this._toBase64(JSON.stringify(payload));
+            const sha = await this._getFileSha(url);
+
+            const body = {
+                message: 'Update note ' + noteId,
+                content: content,
+                branch: this.branch
+            };
+            if (sha) body.sha = sha;
+
+            const res = await fetch(url, {
+                method: 'PUT',
+                headers: this._headers(),
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error('GitHub PUT failed:', errText);
+                return { status: 'error', error: errText };
+            }
+            return { status: 'success' };
+        } catch (e) {
+            console.error('syncNote error:', e);
+            return { status: 'error', error: e.message };
+        }
+    }
+
+    async deleteNote(noteId) {
+        // 1. Remove from localStorage
+        localStorage.removeItem('note_' + noteId);
+
+        // 2. If no credentials, done
+        if (!this.token || !this.repo) return { status: 'offline' };
+
+        const path = 'notes/' + noteId + '.json';
+        const url = 'https://api.github.com/repos/' + this.repo + '/contents/' + path;
+
+        try {
+            const sha = await this._getFileSha(url);
+            if (!sha) return { status: 'success' }; // File doesn't exist on remote
+
+            const res = await fetch(url, {
+                method: 'DELETE',
+                headers: this._headers(),
+                body: JSON.stringify({
+                    message: 'Delete note ' + noteId,
+                    sha: sha,
+                    branch: this.branch
+                })
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error('GitHub DELETE failed:', errText);
+                return { status: 'error', error: errText };
+            }
+            return { status: 'success' };
+        } catch (e) {
+            console.error('deleteNote error:', e);
+            return { status: 'error', error: e.message };
+        }
     }
 
     async pullLatest() {
         if (!this.token || !this.repo) return { status: 'offline' };
-        
+
         try {
-            const url = `https://api.github.com/repos/${this.repo}/contents/notes?ref=${this.branch}`;
+            const url = 'https://api.github.com/repos/' + this.repo + '/contents/notes?ref=' + this.branch;
             const res = await fetch(url, {
-                headers: {
-                    'Authorization': `token ${this.token}`,
-                    'Accept': 'application/vnd.github.v3+json'
+                headers: { 'Authorization': 'token ' + this.token, 'Accept': 'application/vnd.github.v3+json' }
+            });
+
+            if (!res.ok) {
+                if (res.status === 404) return { status: 'success', count: 0 };
+                throw new Error('Failed to list notes: HTTP ' + res.status);
+            }
+
+            const files = await res.json();
+            if (!Array.isArray(files)) return { status: 'success', count: 0 };
+
+            const remoteIds = new Set();
+            let pullCount = 0;
+
+            for (const file of files) {
+                if (file.type !== 'file' || !file.name.endsWith('.json')) continue;
+
+                const noteId = file.name.replace('.json', '');
+                remoteIds.add(noteId);
+
+                const localNote = this.getLocal(noteId);
+                const fetchUrl = file.download_url;
+
+                const fileRes = await fetch(fetchUrl, {
+                    headers: { 'Authorization': 'token ' + this.token }
+                });
+                if (!fileRes.ok) continue;
+
+                const remoteNote = await fileRes.json();
+                const remoteTime = remoteNote.updatedAt || 0;
+                const localTime = localNote ? (localNote.updatedAt || 0) : 0;
+
+                if (!localNote || remoteTime > localTime) {
+                    this.saveLocal(noteId, remoteNote);
+                    pullCount++;
+                }
+            }
+
+            // Remove local notes deleted on remote
+            this.getAllLocalNotes().forEach(ln => {
+                if (ln.id && !remoteIds.has(ln.id)) {
+                    localStorage.removeItem('note_' + ln.id);
                 }
             });
-            
-            if (!res.ok) {
-                if (res.status === 404) return { status: 'success', count: 0 }; // No notes folder yet
-                throw new Error('Failed to fetch notes list');
-            }
-            
-            const files = await res.json();
-            if (!Array.isArray(files)) throw new Error('Invalid notes format');
-            
-            let pullCount = 0;
-            
-            for (const file of files) {
-                if (file.type === 'file' && file.name.endsWith('.json')) {
-                    const noteId = file.name.replace('.json', '');
-                    const localNote = this.getLocal(noteId);
-                    
-                    const fileRes = await fetch(file.url, {
-                        headers: {
-                            'Authorization': `token ${this.token}`,
-                            'Accept': 'application/vnd.github.v3.raw'
-                        }
-                    });
-                    
-                    if (fileRes.ok) {
-                        const remoteNote = await fileRes.json();
-                        if (!localNote || remoteNote.updatedAt > localNote.updatedAt) {
-                            this.saveLocal(noteId, remoteNote);
-                            pullCount++;
-                        }
-                    }
-                }
-            }
-            
+
             return { status: 'success', count: pullCount };
         } catch (e) {
-            console.error(e);
-            return { status: 'error' };
+            console.error('pullLatest error:', e);
+            return { status: 'error', error: e.message };
         }
     }
 }
+
 window.SyncController = SyncController;
