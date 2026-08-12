@@ -1014,13 +1014,21 @@
 
     <script>
 window.onerror = function(msg, src, line, col, err) {
-    document.body.style.background = '#fff';
-    document.body.innerHTML = '<div style="font-family:monospace;padding:30px;color:#c00;font-size:14px"><strong>JS ERROR:</strong><br>' + msg + '<br><br>File: ' + src + '<br>Line: ' + line + '<br><br>' + (err ? err.stack || err : '') + '</div>';
-    return true;
+    var d = document.getElementById('js-error-overlay') || document.createElement('div');
+    d.id = 'js-error-overlay';
+    d.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:#c00;color:#fff;padding:12px 16px;font-size:13px;font-family:monospace;z-index:999999;white-space:pre-wrap;';
+    d.innerText = 'JS ERROR: ' + msg + '
+File: ' + src + ' Line:' + line + '
+' + (err ? err.stack || '' : '');
+    document.body.appendChild(d);
+    return false;
 };
 window.onunhandledrejection = function(e) {
-    document.body.style.background = '#fff';
-    document.body.innerHTML = '<div style="font-family:monospace;padding:30px;color:#c00;font-size:14px"><strong>PROMISE ERROR:</strong><br>' + e.reason + '</div>';
+    var d = document.getElementById('js-promise-overlay') || document.createElement('div');
+    d.id = 'js-promise-overlay';
+    d.style.cssText = 'position:fixed;top:60px;left:0;width:100%;background:#c60;color:#fff;padding:12px 16px;font-size:13px;font-family:monospace;z-index:999999;';
+    d.innerText = 'PROMISE ERROR: ' + e.reason;
+    document.body.appendChild(d);
 };
 </script>
     <script src="js/canvas.js?v=1786505461"></script>
