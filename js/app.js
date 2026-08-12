@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const canvasCtrl = new CanvasController('drawingCanvas');
     const syncCtrl = new SyncController();
     
@@ -20,7 +20,7 @@
         if (!syncCtrl.token) return;
         const result = await syncCtrl.pullLatest();
         if (result.status === 'success' && result.count > 0) {
-            showToast('撌脣?甇亥??圈脣漲 (Synced to Latest)');
+            showToast('已同步至最新進度 (Synced to Latest)');
             renderHomeLists();
             if (currentNoteId) {
                 // Refresh current note without losing unsaved canvas if we have conflict resolution?
@@ -117,11 +117,11 @@
     const btnDeleteNote = document.getElementById('btn-delete-note');
     if (btnDeleteNote) {
         btnDeleteNote.addEventListener('click', async () => {
-            if (confirm('確定刪除此筆記？')) {
+            if (confirm('確定刪除此筆記？ (Are you sure you want to delete this note?)')) {
                 const noteToDelete = currentNoteId;
                 currentNoteId = null; // Prevent auto-save
                 await syncCtrl.deleteNote(noteToDelete);
-                showToast('筆記已刪除');
+                showToast('筆記已刪除 (Note deleted)');
                 showHomeView();
             }
         });
@@ -410,7 +410,7 @@
                 dot.className = 'status-dot success';
                 txt.innerText = 'Synced';
             }
-            showToast('撌脣?甇亥??圈脣漲 (Synced to Latest)');
+            showToast('已同步至最新進度 (Synced to Latest)');
             renderHomeLists();
             if (currentNoteId) showEditorView(currentNoteId);
         } else {
@@ -458,7 +458,7 @@
         );
         const result = await syncCtrl.pullLatest();
         if (result.status === 'success') {
-            showToast('撌脣?甇亥??圈脣漲 (Synced to Latest)');
+            showToast('已同步至最新進度 (Synced to Latest)');
             renderHomeLists();
             if (currentNoteId) showEditorView(currentNoteId);
         } else {
@@ -559,12 +559,12 @@
         deleteBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         deleteBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (confirm('確定刪除此筆記？')) {
+            if (confirm('確定刪除此筆記？ (Are you sure you want to delete this note?)')) {
                 if (currentNoteId === note.id) {
                     currentNoteId = null; // if somehow deleted from drawer/background
                 }
                 await syncCtrl.deleteNote(note.id);
-                showToast('筆記已刪除');
+                showToast('筆記已刪除 (Note deleted)');
                 renderHomeLists();
                 renderDrawerList();
             }
@@ -652,4 +652,3 @@
     // Initial render
     showHomeView();
 });
-
